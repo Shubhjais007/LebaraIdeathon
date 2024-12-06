@@ -5,26 +5,7 @@ using LebaraSign.Services.Storage;
 using System.Net;
 using PdfSharp.Drawing;
 using PdfSharp.Pdf.IO;
-using static PdfSharp.Pdf.PdfDictionary;
-using PdfSharp.Pdf;
 using PdfDocument = UglyToad.PdfPig.PdfDocument;
-using UglyToad.PdfPig.Content;
-using System.ComponentModel;
-using iText.Kernel.Pdf;
-using iText.Signatures;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
-//using System.Security.Cryptography.X509Certificates;
-
-using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Security;
-using Org.BouncyCastle.Pkcs;
-using Org.BouncyCastle.X509;
-using Org.BouncyCastle.Asn1.IsisMtt.Ocsp;
-using System.Security.Cryptography.X509Certificates;
-using iText.Commons.Bouncycastle.Crypto;
-using Org.BouncyCastle.Crypto.Parameters;
-using iText.Commons.Bouncycastle.Cert;
-using iText.Kernel.Crypto;
 
 
 namespace LebaraSign.Services;
@@ -100,72 +81,11 @@ public class DocumentService : IDocumentService
 
                     // Save modified PDF to memory stream
                     pdfSharpDocument.Save(modifiedPdfStream);
-                }               
+                }            
+                
                 //digital signing using iText7 library
                 var signedPdfStream = new MemoryStream();
                 modifiedPdfStream.Position = 0;
-                #region Digital Sign
-
-                //X509Certificate2 cert = new X509Certificate2("Path_Add_for_Certificate", "Mahadev@321#");
-                //var reader = new iText.Kernel.Pdf.PdfReader(modifiedPdfStream);
-                //PdfWriter writer = new PdfWriter(signedPdfStream);
-                //var pdfDocument = new iText.Kernel.Pdf.PdfDocument(reader, writer);
-
-                //var signer = new PdfSigner(reader, writer, new StampingProperties());
-                //var pk = Org.BouncyCastle.Security.DotNetUtilities.GetKeyPair(cert.PrivateKey).Private;
-                //var chain = new[] { Org.BouncyCastle.Security.DotNetUtilities.FromX509Certificate(cert) };
-                //var path = Directory.GetCurrentDirectory();
-                //IExternalSignature pks = new PrivateKeySignature(pk, "SHA-256");
-                //signer.SignDetached(pks, chain, null, null, null, 0, PdfSigner.CryptoStandard.CMS);               
-
-                //X509Certificate2 cert = new X509Certificate2(path, certPassword, X509KeyStorageFlags.Exportable);
-
-                //// Convert X509Certificate2 to BouncyCastle objects
-                //Pkcs12Store pkcs12Store;
-                ////using (var certStream = new MemoryStream(cert.Export(X509ContentType.Pfx)))
-                //using (FileStream certStream = new FileStream(path, FileMode.Open, FileAccess.Read))
-                //{
-                //    Pkcs12StoreBuilder builder = new Pkcs12StoreBuilder();
-                //    pkcs12Store = builder.Build();
-                //    pkcs12Store.Load(certStream, certPassword.ToCharArray());
-                //}
-
-                //// Extract the private key and certificate chain
-                //string alias = null;
-                //foreach (string currentAlias in pkcs12Store.Aliases)
-                //{
-                //    if (pkcs12Store.IsKeyEntry(currentAlias))
-                //    {
-                //        alias = currentAlias;
-                //        break;
-                //    }
-                //}
-                ////AsymmetricKeyParameter privateKey = pkcs12Store.GetKey(alias).Key;
-                ////X509CertificateEntry[] chain = pkcs12Store.GetCertificateChain(alias);
-                ////Org.BouncyCastle.X509.X509Certificate[] bouncyCastleChain = Array.ConvertAll(chain, entry => entry.Certificate);
-
-                //AsymmetricKeyParameter privateKey = pkcs12Store.GetKey(alias).Key;
-                //Org.BouncyCastle.X509.X509Certificate[] bouncyCastleChain = Array.ConvertAll(pkcs12Store.GetCertificateChain(alias), entry => entry.Certificate);
-
-                //// Convert BouncyCastle AsymmetricKeyParameter to iText IPrivateKey
-                ////byte[] privateKeyBytes = GetPrivateKeyBytes(privateKey);
-                ////IPrivateKey iTextPrivateKey = (IPrivateKey)PrivateKeyFactory.CreateKey(privateKeyBytes);
-
-                //// Convert the BouncyCastle certificates to iText's IX509Certificate
-                ////IX509Certificate[] iTextCertificates = ConvertToITextCertificates(bouncyCastleChain);
-
-                //// iText7 signing
-                //var reader = new iText.Kernel.Pdf.PdfReader(modifiedPdfStream);
-                ////var writer = new iText.Kernel.Pdf.PdfWriter(signedPdfStream);
-                //PdfSigner signer = new PdfSigner(reader, signedPdfStream, new StampingProperties());
-
-                ////IExternalSignature pks = new PrivateKeySignature((IPrivateKey)privateKey, DigestAlgorithms.SHA256);
-
-                //// Use the RSASSAPkcs1Signature class, compatible with BouncyCastle private keys
-                //IExternalSignature pks = new PrivateKeySignature(  , DigestAlgorithms.SHA256);
-                //signer.SignDetached(pks, bouncyCastleChain, null, null, null, 0, PdfSigner.CryptoStandard.CMS);
-
-                #endregion Digital Sign
 
                 // Upload modified PDF to Azure Blob Storage
                 signedPdfStream.Position = 0;
@@ -231,22 +151,6 @@ public class DocumentService : IDocumentService
         }
         return response;
     }
-
-    private byte[] GetPrivateKeyBytes(AsymmetricKeyParameter privateKey)
-    {
-        // Extract the private key bytes for both RSA and EC keys
-        if (privateKey is RsaKeyParameters rsaKey)
-        {
-            return rsaKey.Modulus.ToByteArrayUnsigned();  // Convert RSA private key to byte array
-        }
-        else if (privateKey is ECPrivateKeyParameters ecKey)
-        {
-            return ecKey.D.ToByteArray();  // Convert EC private key to byte array
-        }
-
-        throw new NotSupportedException("Unsupported private key type");
-    }
-   
 
     //private async Task UploadToBlobStorage(Stream pdfStream, string blobName)
     //{
