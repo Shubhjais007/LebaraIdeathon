@@ -5,10 +5,10 @@ const Welcome = () => {
     const theme = useTheme()
 
     return (
-        <Container maxWidth="sm">
+        <Container maxWidth="sm" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', textAlign: 'center', gap: 20 }}>
             <Typography variant="h3" color={theme.palette.primary.dark}>Welcome to LebaraSign</Typography>
             <Box style={{ margin: '12px 0' }}>
-                <Typography variant="body1">
+                <Typography variant="h6">
                     Get your documents digitally signed
                 </Typography>
             </Box>
