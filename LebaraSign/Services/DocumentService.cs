@@ -152,21 +152,4 @@ public class DocumentService : IDocumentService
         return response;
     }
 
-    //private async Task UploadToBlobStorage(Stream pdfStream, string blobName)
-    //{
-    //    BlobServiceClient blobServiceClient = new BlobServiceClient(blobConnectionString);
-    //    BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(blobContainerName);
-    //    await containerClient.CreateIfNotExistsAsync();
-    //    BlobClient blobClient = containerClient.GetBlobClient(blobName);
-    //    await blobClient.UploadAsync(pdfStream, overwrite: true);
-    //}
-
-    //private byte[] ConvertToByteArray(Stream inputStream)
-    //{
-    //    using (var memoryStream = new MemoryStream())
-    //    {
-    //        inputStream.CopyTo(memoryStream);
-    //        return memoryStream.ToArray();
-    //    }
-    //}
 }
