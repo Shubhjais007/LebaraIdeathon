@@ -22,8 +22,6 @@ public class DocumentController : ControllerBase
     [HttpPost("upload"), DisableRequestSizeLimit]
     public async Task<IActionResult> UploadAsync([FromForm] FileUploadModel fileUploadModel)
     {
-       
-
         if (string.IsNullOrEmpty(fileUploadModel.ContractPdf.ContentType) || !fileUploadModel.ContractPdf.ContentType.Equals("application/pdf", StringComparison.InvariantCultureIgnoreCase) || pdfMaxLength <= fileUploadModel.ContractPdf.Length)
         {
             return BadRequest("Contract File format/Type is not correct or File Size is more than 3 MB.");
@@ -33,12 +31,7 @@ public class DocumentController : ControllerBase
         {
             return BadRequest("Signature Image format/Type is not correct or File Size is more than 3 MB.");
         }
-
-        //var contractFileStream = fileUploadModel.ContractPdf.OpenReadStream();
-        //var imageFileStream = fileUploadModel.SignatureImage.OpenReadStream();
-
-        //var result = await _documentService.UploadFileAsync(fileUploadModel.Name, fileUploadModel.Email, fileUploadModel.Location,  contractFileStream, imageFileStream);
-
+        
         var result = await _documentService.UploadFileAsync(fileUploadModel);
         if (result.IsError)
         {
