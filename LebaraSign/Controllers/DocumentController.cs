@@ -2,6 +2,7 @@
 using LebaraSign.Models;
 using LebaraSign.Services;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
@@ -38,5 +39,21 @@ public class DocumentController : ControllerBase
             return BadRequest(result);
         }
         return Ok(result);
+    }
+
+    [HttpGet("[action]/{contractId}")]
+    public async Task<IActionResult> DownloadContract(string contractId)
+    {
+        byte[] rawBytes = Array.Empty<byte>();
+        if (string.IsNullOrEmpty(contractId))
+        {
+            return BadRequest("Contract ID is required.");
+        }
+        var contractResponse = await _documentService.DownloadContract(contractId);
+        if (contractResponse.SignedContractLink == null)
+        {
+            return BadRequest(contractResponse);
+        }
+        return Ok(contractResponse);
     }
 }

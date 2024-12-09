@@ -6,6 +6,8 @@ using System.Net;
 using PdfSharp.Drawing;
 using PdfSharp.Pdf.IO;
 using PdfDocument = UglyToad.PdfPig.PdfDocument;
+using static PdfSharp.Pdf.PdfDictionary;
+using System;
 
 
 namespace LebaraSign.Services;
@@ -92,7 +94,7 @@ public class DocumentService : IDocumentService
                 pdfStream.Position = 0;
                 imageStream.Position = 0;
                 var signContractBlob = container.GetBlobClient($"signedcontract/{guid}.pdf");
-                var signContractResult = await signContractBlob.UploadAsync(signedPdfStream);
+                var signContractResult = await signContractBlob.UploadAsync(modifiedPdfStream);
                 Console.WriteLine("PDF with signature uploaded successfully.");
                                 
                 var contractBlob = container.GetBlobClient($"contract/{guid}.pdf");
@@ -152,4 +154,31 @@ public class DocumentService : IDocumentService
         return response;
     }
 
+    public async Task<DownloadResponse> DownloadContract(string contractId)
+    {
+        var response = new DownloadResponse();
+        try
+        {
+            var contractDetails = await _tableService.GetById(contractId);
+
+            var container = _blobServiceClient.GetBlobContainerClient("lebarasign");
+            await container.CreateIfNotExistsAsync();
+
+            var contractBlob = container.GetBlobClient(contractDetails?.ContractPath);
+            var contractBlobResult = contractBlob.GenerateSasUri(Azure.Storage.Sas.BlobSasPermissions.Read, DateTimeOffset.UtcNow.AddHours(2));
+
+            var signedContractBlob = container.GetBlobClient(contractDetails?.SignedContractPath);
+            var signedContractBlobResult = signedContractBlob.GenerateSasUri(Azure.Storage.Sas.BlobSasPermissions.Read, DateTimeOffset.UtcNow.AddHours(2));
+
+            response.ContractLink = contractBlobResult;
+            response.SignedContractLink = signedContractBlobResult;
+
+            return response;
+        }
+        catch (Exception)
+        {
+            return response;            
+        }
+
+    }
 }
