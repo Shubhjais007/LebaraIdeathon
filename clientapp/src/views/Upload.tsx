@@ -1,4 +1,4 @@
-import { Box, Container, FormControl, Grid2 as Grid, Input, InputLabel, styled, Typography, useTheme, Button, FormControlLabel, Checkbox, Alert, AlertTitle, Modal, Backdrop, CircularProgress } from "@mui/material";
+import { Box, Container, FormControl, Grid2 as Grid, Input, InputLabel, styled, Typography, useTheme, Button, FormControlLabel, Checkbox, Alert, AlertTitle, Modal, Backdrop, CircularProgress, Snackbar } from "@mui/material";
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import SignaturePad from 'react-signature-pad-wrapper';
 import { useReducer, useRef, useState } from "react";
@@ -34,6 +34,7 @@ const Upload = () => {
     const theme = useTheme();
     const [open, setOpen] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState<string | undefined>()
     const [valid, setValid] = useState(false)
     const signaturepad = useRef<SignaturePad>(null)
     const [uploadForm, dispatch] = useReducer(reducer, initialState)
@@ -45,13 +46,39 @@ const Upload = () => {
         for (const field in uploadForm) {
             formData.append(field, uploadForm[field as keyof typeof uploadForm] as string | File)
         }
-        const submitRes = await submitFiles(formData)
-        if (!submitRes || !submitRes.data || submitRes.data.isError) {
-            setIsLoading(false)
+        let contractId, file_path
+        try {
+            const submitRes = await submitFiles(formData)
+            if (!submitRes || !submitRes.data || submitRes.data.isError) {
+                setIsLoading(false)
+                return
+            }
+            contractId = submitRes.data.id
+        } catch (e: any) {
+            setIsLoading(false);
+            if (e.response && e.response.data) {
+                if (e.response.data.errors)
+                    setError(Object.values(e.response.data.errors).map((d: any) => d[0]).join(';'))
+                else
+                    setError(e.response.data)
+            }            
             return
         }
-        const downloadRes = await downloadContract(submitRes.data.id)
-        const file_path = downloadRes.data.signedContractLink
+
+        try {
+            const downloadRes = await downloadContract(contractId)
+            file_path = downloadRes.data.signedContractLink
+        } catch (e: any) {
+            setIsLoading(false);
+            if (e.response && e.response.data) {
+                if (e.response.data.errors)
+                    setError(Object.values(e.response.data.errors).map((d: any) => d[0]).join(';'))
+                else
+                    setError(e.response.data)
+            } 
+            return
+        }
+        
         const a = document.createElement('a');
         a.href = file_path
         a.target = '_blank'
@@ -72,6 +99,16 @@ const Upload = () => {
             >
                 <CircularProgress color="inherit" />
             </Backdrop>
+            <Snackbar open={!!error} autoHideDuration={5000} onClose={() => setError(undefined)}>
+                <Alert
+                    onClose={() => setError(undefined)}
+                    severity="error"
+                    variant="filled"
+                    sx={{ width: '100%' }}
+                >
+                    {error?.split(';').map(m => <Typography variant="body1" display={"block"}>{m}</Typography>)}
+                </Alert>
+            </Snackbar>
             <Container maxWidth="sm">
                 <Typography textAlign={'center'} variant="h5" color={theme.palette.primary.dark}>Upload your document and signature</Typography>
                 <Box style={{ margin: '60px 0' }} maxWidth="sm">
