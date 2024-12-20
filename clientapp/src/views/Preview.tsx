@@ -1,6 +1,7 @@
-import { Container, Typography } from "@mui/material";
+import { Button, Container, Typography } from "@mui/material";
 import { useLocation } from "react-router-dom";
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import { Link } from "react-router";
 
 const Preview = () => {
     let location = useLocation();
@@ -13,6 +14,9 @@ const Preview = () => {
             <Typography variant="h5">
                 Your document has been signed successfully!
             </Typography>
+            <Link to="/welcome">
+                <Button variant="contained" color="primary">Home</Button>
+            </Link>
         </Container>
     )
 }
